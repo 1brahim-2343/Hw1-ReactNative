@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Text, View, TouchableOpacity, Button, StyleSheet } from "react-native";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  Button,
+  StyleSheet,
+  Alert,
+} from "react-native";
 
 const lines = [
   [0, 1, 2],
@@ -16,7 +23,7 @@ export default function TabLayout() {
   const [grid, setGrid] = useState(Array(9).fill(""));
   const [isXTurn, setIsXTurn] = useState(true);
 
-  let winner = "";
+  let winner = null;
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (grid[a] !== "" && grid[a] === grid[b] && grid[a] === grid[c]) {
@@ -24,11 +31,25 @@ export default function TabLayout() {
     }
   }
 
+  const resetGame = () => {
+    if (grid.every((x) => x === " ")) {
+      return;
+    }
+    setGrid(Array(9).fill(""));
+    setIsXTurn(true);
+  };
+
   const isDraw = winner === "" && !grid.includes("");
 
   let status = `Turn: ${isXTurn ? "X" : "O"}`;
   if (winner) status = `Winner: ${winner}`;
   else if (isDraw) status = "Draw";
+
+  if (winner !== null) {
+    Alert.alert(status);
+    winner = null;
+    resetGame();
+  }
 
   return (
     <View style={styles.container}>
@@ -36,8 +57,8 @@ export default function TabLayout() {
       <View style={styles.board}>
         {grid.map((cell, i) => (
           <View key={i} style={styles.cell}>
-            <Button
-              title={cell ?? " "}
+            <TouchableOpacity
+              style={styles.button}
               onPress={() => {
                 if (cell || winner) return;
                 const newGrid = [...grid];
@@ -45,16 +66,16 @@ export default function TabLayout() {
                 setGrid(newGrid);
                 setIsXTurn(!isXTurn);
               }}
-            />
-            <Text> </Text>
+            >
+              <Text style={styles.cellText}>{cell ?? " "}</Text>
+            </TouchableOpacity>
           </View>
         ))}
       </View>
       <Button
         title="Reset"
         onPress={() => {
-          setGrid(Array(9).fill(''));
-          setIsXTurn(true);
+          resetGame();
         }}
       />
     </View>
@@ -76,6 +97,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  button: {
+    width: "100%",
+    alignItems: "center",
+    fontSize: 100,
   },
   cellText: { fontSize: 40 },
 });
